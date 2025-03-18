@@ -1,10 +1,19 @@
-import { View, Text } from 'react-native'
-import React from 'react'
+import React from 'react';
+import { StatusBar } from 'react-native';
+import { GestureHandlerRootView } from 'react-native-gesture-handler';
+import AppNavigation from './App/Navigation/AppNavigation';
+import Colors from './App/Utils/Colors';
 
-export default function App() {
+const App = () => {
   return (
-    <View>
-      <Text>App</Text>
-    </View>
-  )
-}
+    <GestureHandlerRootView style={{ flex: 1 }}>
+      <StatusBar
+        backgroundColor={Colors.WHITE}
+        barStyle="dark-content"
+      />
+      <AppNavigation />
+    </GestureHandlerRootView>
+  );
+};
+
+export default App;
