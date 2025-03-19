@@ -318,18 +318,12 @@ const styles = StyleSheet.create({
   socialButton: {
     width: wp(12),
     height: wp(12),
-    borderRadius: wp(6),
+    borderRadius: wp(2),
     backgroundColor: Colors.WHITE,
     justifyContent: 'center',
     alignItems: 'center',
-    shadowColor: Colors.BLACK,
-    shadowOffset: {
-      width: 0,
-      height: 1,
-    },
-    shadowOpacity: 0.2,
-    shadowRadius: 1.41,
-    elevation: 2,
+    borderWidth: 0.5,
+    borderColor: Colors.GRAY,
   },
   orText: {
     fontFamily: Fonts.LEXEND_MEDIUM,

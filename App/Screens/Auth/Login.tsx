@@ -17,7 +17,7 @@ import LinearGradient from 'react-native-linear-gradient'
 import Colors from '../../Utils/Colors'
 import Fonts from '../../Utils/Fonts'
 import { useNavigation } from '@react-navigation/native'
-
+import { StackNavigationProp } from '@react-navigation/stack';
 const { width, height } = Dimensions.get('window');
 
 // Responsive size helpers
@@ -141,6 +141,14 @@ export default function Login() {
               />
               {errors.password ? <Text style={styles.errorText}>{errors.password}</Text> : null}
             </View>
+            
+            {/* Forget Password Button */}
+            <TouchableOpacity 
+              style={styles.forgetPasswordButton}
+              onPress={() => navigation.navigate('ForgetPassword' as never)}
+            >
+              <Text style={styles.forgetPasswordText}>Forget Password?</Text>
+            </TouchableOpacity>
             
             {/* Remember me */}
             <View style={styles.rememberContainer}>
@@ -295,6 +303,15 @@ const styles = StyleSheet.create({
     fontFamily: Fonts.LEXEND_REGULAR,
     fontSize: wp(3),
     marginTop: hp(0.5),
+  },
+  forgetPasswordButton: {
+    alignSelf: 'flex-end',
+    marginBottom: hp(1.5),
+  },
+  forgetPasswordText: {
+    fontFamily: Fonts.LEXEND_MEDIUM,
+    fontSize: wp(3.5),
+    color: Colors.SECONDARY,
   },
   rememberContainer: {
     justifyContent: 'center',
