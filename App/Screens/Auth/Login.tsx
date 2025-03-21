@@ -18,47 +18,34 @@ import Colors from '../../Utils/Colors'
 import Fonts from '../../Utils/Fonts'
 import { useNavigation } from '@react-navigation/native'
 import { StackNavigationProp } from '@react-navigation/stack';
+import CustomHeader from '../../Components/Common/CustomHeader';
+import { wp, hp } from '../../Utils/ResponsiveHelpers';
 const { width, height } = Dimensions.get('window');
-
-// Responsive size helpers
-const wp = (percentage: number) => {
-  return width * (percentage / 100);
-};
-
-const hp = (percentage: number) => {
-  return height * (percentage / 100);
-};
 
 export default function Login() {
   const navigation = useNavigation();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [rememberMe, setRememberMe] = useState(false);
-  
-  // Form validation state
-  const [errors, setErrors] = useState({
-    email: '',
-    password: ''
-  });
+  const [errors, setErrors] = useState({ email: '', password: '' });
 
-  // Validate input fields
   const validateInputs = () => {
     let isValid = true;
     const newErrors = { email: '', password: '' };
 
-    // Email validation
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!email.trim()) {
       newErrors.email = 'Email is required';
       isValid = false;
-    } else if (!emailRegex.test(email)) {
+    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
       newErrors.email = 'Please enter a valid email';
       isValid = false;
     }
 
-    // Password validation
     if (!password) {
       newErrors.password = 'Password is required';
+      isValid = false;
+    } else if (password.length < 8 || !/(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])/.test(password)) {
+      newErrors.password = 'Password must include uppercase, lowercase, number, and symbol';
       isValid = false;
     }
 
@@ -66,7 +53,6 @@ export default function Login() {
     return isValid;
   };
 
-  // Handle login
   const handleLogin = () => {
     if (validateInputs()) {
       console.log('Login validated successfully!');
@@ -92,21 +78,7 @@ export default function Login() {
       
       <SafeAreaView style={styles.safeAreaContainer}>
         {/* Header */}
-        <View style={styles.header}>
-          <View style={styles.logoContainer}>
-            <Image 
-              source={require('../../../assets/images/common/logo.png')} 
-              style={styles.logo}
-              resizeMode="contain"
-            />
-          </View>
-          <TouchableOpacity 
-            style={styles.backButton}
-            onPress={() => navigation.goBack()}
-          >
-            <Text style={styles.backButtonText}>Back</Text>
-          </TouchableOpacity>
-        </View>
+        <CustomHeader onBackPress={() => navigation.goBack()} isBackBtnVisible={true} />
       
         {/* Form */}
         <ScrollView contentContainerStyle={styles.formContainer}>
@@ -305,13 +277,13 @@ const styles = StyleSheet.create({
     marginTop: hp(0.5),
   },
   forgetPasswordButton: {
-    alignSelf: 'flex-end',
+    alignSelf: 'flex-start', // Move to the left side
     marginBottom: hp(1.5),
   },
   forgetPasswordText: {
     fontFamily: Fonts.LEXEND_MEDIUM,
     fontSize: wp(3.5),
-    color: Colors.SECONDARY,
+    color: Colors.PRIMARY_LIGHT, // Change color to PRIMARY_LIGHT
   },
   rememberContainer: {
     justifyContent: 'center',

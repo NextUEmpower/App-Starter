@@ -3,128 +3,108 @@ import {
   Text, 
   StyleSheet, 
   TextInput, 
-  TouchableOpacity, 
-  Dimensions, 
   KeyboardAvoidingView, 
   Platform, 
   ScrollView 
 } from 'react-native';
 import React, { useState } from 'react';
+import LinearGradient from 'react-native-linear-gradient';
 import Colors from '../../Utils/Colors';
 import Fonts from '../../Utils/Fonts';
-
-const { width, height } = Dimensions.get('window');
-
-// Responsive size helpers
-const wp = (percentage: number) => {
-  return width * (percentage / 100);
-};
-
-const hp = (percentage: number) => {
-  return height * (percentage / 100);
-};
+import { useNavigation } from '@react-navigation/native';
+import { SafeAreaView } from 'react-native';
+import CustomHeader from '../../Components/Common/CustomHeader';
+import StepOne from '../../Components/Auth/StepOne';
+import StepTwo from '../../Components/Auth/StepTwo';
+import StepThree from '../../Components/Auth/StepThree';
+import { wp, hp } from '../../Utils/ResponsiveHelpers';
+import { useDispatch, useSelector } from 'react-redux';
+import { setEmail } from '../../Store/userSlice';
+import { RootState } from '../../Store/store';
 
 export default function ForgetPassword() {
-  const [step, setStep] = useState(1); // Step 1: Email, Step 2: OTP, Step 3: New Password
-  const [email, setEmail] = useState('');
+  const navigation = useNavigation();
+  const dispatch = useDispatch();
+  const { email } = useSelector((state: RootState) => state.user);
+  const [step, setStep] = useState(1); 
   const [otp, setOtp] = useState(['', '', '', '', '', '']);
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
+  const [errors, setErrors] = useState({ email: '', otp: '', password: '', confirmPassword: '' });
+  const otpRefs = Array.from({ length: 6 }, () => React.createRef<TextInput>());
 
   const handleOtpChange = (value: string, index: number) => {
     const updatedOtp = [...otp];
     updatedOtp[index] = value;
     setOtp(updatedOtp);
+
+    if (value && index < otpRefs.length - 1) {
+      otpRefs[index + 1].current?.focus();
+    }
+  };
+
+  const validateStepOne = () => {
+    if (!email.trim()) {
+      setErrors({ ...errors, email: 'Email is required' });
+      return false;
+    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+      setErrors({ ...errors, email: 'Please enter a valid email' });
+      return false;
+    }
+    return true;
+  };
+
+  const validateStepThree = () => {
+    let isValid = true;
+    const newErrors = { ...errors, password: '', confirmPassword: '' };
+
+    if (!newPassword) {
+      newErrors.password = 'Password is required';
+      isValid = false;
+    } else if (newPassword.length < 8 || !/(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])/.test(newPassword)) {
+      newErrors.password = 'Password must include uppercase, lowercase, number, and symbol';
+      isValid = false;
+    }
+
+    if (!confirmPassword) {
+      newErrors.confirmPassword = 'Confirm Password is required';
+      isValid = false;
+    } else if (confirmPassword !== newPassword) {
+      newErrors.confirmPassword = 'Passwords do not match';
+      isValid = false;
+    }
+
+    setErrors(newErrors);
+    return isValid;
   };
 
   const renderStepContent = () => {
     if (step === 1) {
-      // Step 1: Enter Email
       return (
-        <>
-          <Text style={styles.description}>
-            Enter your email address and we’ll send you a confirmation code to reset your password.
-          </Text>
-          <View style={styles.inputContainer}>
-            <Text style={styles.inputLabel}>Email Address</Text>
-            <TextInput 
-              style={styles.input}
-              value={email}
-              onChangeText={setEmail}
-              placeholder="Enter your email"
-              keyboardType="email-address"
-              autoCapitalize="none"
-            />
-          </View>
-          <TouchableOpacity 
-            style={styles.button}
-            onPress={() => setStep(2)}
-          >
-            <Text style={styles.buttonText}>Send Confirmation Code</Text>
-          </TouchableOpacity>
-        </>
+        <StepOne
+          email={email}
+          setEmail={(value) => dispatch(setEmail(value))}
+          onNext={() => validateStepOne() && setStep(2)}
+        />
       );
     } else if (step === 2) {
-      // Step 2: Enter OTP
       return (
-        <>
-          <Text style={styles.description}>
-            Enter the 6-digit confirmation code sent to your email.
-          </Text>
-          <View style={styles.otpContainer}>
-            {otp.map((digit, index) => (
-              <TextInput 
-                key={index}
-                style={styles.otpInput}
-                value={digit}
-                onChangeText={(value) => handleOtpChange(value, index)}
-                maxLength={1}
-                keyboardType="numeric"
-              />
-            ))}
-          </View>
-          <TouchableOpacity 
-            style={styles.button}
-            onPress={() => setStep(3)}
-          >
-            <Text style={styles.buttonText}>Submit</Text>
-          </TouchableOpacity>
-        </>
+        <StepTwo
+          otp={otp}
+          otpRefs={otpRefs}
+          handleOtpChange={handleOtpChange}
+          onNext={() => setStep(3)}
+        />
       );
     } else if (step === 3) {
-      // Step 3: Enter New Password
       return (
-        <>
-          <Text style={styles.description}>
-            Enter your new password and confirm it to reset your password.
-          </Text>
-          <View style={styles.inputContainer}>
-            <Text style={styles.inputLabel}>New Password</Text>
-            <TextInput 
-              style={styles.input}
-              value={newPassword}
-              onChangeText={setNewPassword}
-              placeholder="Enter new password"
-              secureTextEntry
-            />
-          </View>
-          <View style={styles.inputContainer}>
-            <Text style={styles.inputLabel}>Confirm Password</Text>
-            <TextInput 
-              style={styles.input}
-              value={confirmPassword}
-              onChangeText={setConfirmPassword}
-              placeholder="Confirm new password"
-              secureTextEntry
-            />
-          </View>
-          <TouchableOpacity 
-            style={styles.button}
-            onPress={() => console.log('Password reset successfully!')}
-          >
-            <Text style={styles.buttonText}>Save</Text>
-          </TouchableOpacity>
-        </>
+        <StepThree
+          newPassword={newPassword}
+          confirmPassword={confirmPassword}
+          setNewPassword={setNewPassword}
+          setConfirmPassword={setConfirmPassword}
+          onSave={() => validateStepThree() && console.log('Password reset successfully!')}
+        />
       );
     }
   };
@@ -134,10 +114,27 @@ export default function ForgetPassword() {
       behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
       style={styles.container}
     >
-      <ScrollView contentContainerStyle={styles.scrollContainer}>
-        <Text style={styles.title}>Forgot Password?</Text>
-        {renderStepContent()}
-      </ScrollView>
+      <View style={styles.topSection}>
+        <LinearGradient
+          colors={[Colors.PRIMARY_LIGHT, Colors.PRIMARY_DARK]}
+          style={styles.gradient}
+        />
+      </View>
+      
+      <View style={styles.bottomSection}>
+        <View style={styles.bottomBackground} />
+      </View>
+      
+      <SafeAreaView style={styles.safeAreaContainer}>
+        <CustomHeader onBackPress={() => navigation.goBack()} isBackBtnVisible={true} />
+      
+        <ScrollView contentContainerStyle={styles.formContainer}>
+          <View style={styles.formBox}>
+            <Text style={styles.formTitle}>Forgot Password?</Text>
+            {renderStepContent()}
+          </View>
+        </ScrollView>
+      </SafeAreaView>
     </KeyboardAvoidingView>
   );
 }
@@ -145,76 +142,54 @@ export default function ForgetPassword() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: Colors.WHITE,
   },
-  scrollContainer: {
-    flexGrow: 1,
+  safeAreaContainer: {
+    flex: 1,
+  },
+  topSection: {
+    height: '40%',
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+  },
+  gradient: {
+    flex: 1,
+  },
+  bottomSection: {
+    height: '60%',
+    position: 'absolute',
+    bottom: 0,
+    left: 0,
+    right: 0,
+  },
+  bottomBackground: {
+    flex: 1,
+    backgroundColor: Colors.LIGHT_GRAY,
+  },
+  formContainer: {
     justifyContent: 'center',
     alignItems: 'center',
-    paddingHorizontal: wp(6),
-    paddingVertical: hp(4),
+    paddingVertical: hp(1),
+    paddingTop: hp(12), 
   },
-  title: {
+  formBox: {
+    width: wp(85),
+    height:hp(50),
+    backgroundColor: Colors.WHITE,
+    borderRadius: wp(4),
+    padding: wp(5),
+    paddingTop: hp(4), 
+    paddingBottom: hp(4),
+    elevation: 5,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  formTitle: {
     fontFamily: Fonts.LEXEND_BOLD,
     fontSize: wp(6),
     color: Colors.PRIMARY_DARK,
-    marginBottom: hp(2),
     textAlign: 'center',
-  },
-  description: {
-    fontFamily: Fonts.LEXEND_REGULAR,
-    fontSize: wp(3.5),
-    color: Colors.DARK_GRAY,
-    marginBottom: hp(3),
-    textAlign: 'center',
-  },
-  inputContainer: {
-    width: '100%',
     marginBottom: hp(2),
-  },
-  inputLabel: {
-    fontFamily: Fonts.LEXEND_MEDIUM,
-    fontSize: wp(3.5),
-    color: Colors.BLACK,
-    marginBottom: hp(0.5),
-  },
-  input: {
-    height: hp(6),
-    borderWidth: 1,
-    borderColor: Colors.LIGHT_GRAY,
-    borderRadius: wp(2),
-    paddingHorizontal: wp(3),
-    fontFamily: Fonts.LEXEND_REGULAR,
-    fontSize: wp(3.5),
-  },
-  otpContainer: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    width: '100%',
-    marginBottom: hp(3),
-  },
-  otpInput: {
-    width: wp(12),
-    height: wp(12),
-    borderWidth: 1,
-    borderColor: Colors.LIGHT_GRAY,
-    borderRadius: wp(2),
-    textAlign: 'center',
-    fontFamily: Fonts.LEXEND_REGULAR,
-    fontSize: wp(4),
-  },
-  button: {
-    backgroundColor: Colors.SECONDARY,
-    borderRadius: wp(2),
-    height: hp(6),
-    justifyContent: 'center',
-    alignItems: 'center',
-    width: '100%',
-    marginBottom: hp(2),
-  },
-  buttonText: {
-    fontFamily: Fonts.LEXEND_SEMIBOLD,
-    fontSize: wp(4),
-    color: Colors.WHITE,
   },
 });

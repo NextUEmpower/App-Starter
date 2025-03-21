@@ -3,13 +3,9 @@ import React, { useEffect } from 'react';
 import { useNavigation } from '@react-navigation/native';
 import { StackNavigationProp } from '@react-navigation/stack';
 import Colors from '../Utils/Colors';
+import { wp } from '../Utils/ResponsiveHelpers';
 
 const { width } = Dimensions.get('window');
-
-// Responsive size helpers
-const wp = (percentage: number) => {
-  return width * (percentage / 100);
-};
 
 // Navigation type definitions
 type RootStackParamList = {
