@@ -18,79 +18,53 @@ import Colors from '../../Utils/Colors'
 import Fonts from '../../Utils/Fonts'
 import Icon from 'react-native-vector-icons/FontAwesome'
 import { useNavigation } from '@react-navigation/native'
+import CustomHeader from '../../Components/Common/CustomHeader'
+import { wp, hp } from '../../Utils/ResponsiveHelpers'
+import { useDispatch, useSelector } from 'react-redux';
+import { setEmail, setPassword, setName } from '../../Store/userSlice';
+import { RootState } from '../../Store/store';
 
 const { width, height } = Dimensions.get('window');
 
-// Responsive size helpers
-const wp = (percentage: number) => {
-  return width * (percentage / 100);
-};
-
-const hp = (percentage: number) => {
-  return height * (percentage / 100);
-};
-
 export default function Signup() {
   const navigation = useNavigation();
-  const [name, setName] = useState('');
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
+  const dispatch = useDispatch();
+  const { email, password, name } = useSelector((state: RootState) => state.user);
   const [rememberMe, setRememberMe] = useState(false);
-  
-  // Form validation state
-  const [errors, setErrors] = useState({
-    name: '',
-    email: '',
-    password: ''
-  });
+  const [errors, setErrors] = useState({ name: '', email: '', password: '' });
 
-  // Validate input fields
   const validateInputs = () => {
     let isValid = true;
     const newErrors = { name: '', email: '', password: '' };
 
-    // Name validation
     if (!name.trim()) {
       newErrors.name = 'Name is required';
       isValid = false;
-    } else {
-      const nameRegex = /^[A-Z][a-z]*$/;
-      if (!nameRegex.test(name)) {
-        newErrors.name = 'First letter uppercase, rest lowercase';
-        isValid = false;
-      }
+    } else if (!/^[A-Z][a-z]*$/.test(name)) {
+      newErrors.name = 'Name must start with an uppercase letter';
+      isValid = false;
     }
 
-    // Email validation
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!email.trim()) {
       newErrors.email = 'Email is required';
       isValid = false;
-    } else if (!emailRegex.test(email)) {
+    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
       newErrors.email = 'Please enter a valid email';
       isValid = false;
     }
 
-    // Password validation
     if (!password) {
       newErrors.password = 'Password is required';
       isValid = false;
-    } else if (password.length < 8) {
-      newErrors.password = 'Password must be at least 8 characters';
+    } else if (password.length < 8 || !/(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])/.test(password)) {
+      newErrors.password = 'Password must include uppercase, lowercase, number, and symbol';
       isValid = false;
-    } else {
-      const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
-      if (!passwordRegex.test(password)) {
-        newErrors.password = 'Include uppercase, lowercase, number, and symbol';
-        isValid = false;
-      }
     }
 
     setErrors(newErrors);
     return isValid;
   };
 
-  // Handle signup
   const handleSignup = () => {
     if (validateInputs()) {
       console.log('Signup validated successfully!');
@@ -116,21 +90,7 @@ export default function Signup() {
       
       <SafeAreaView style={styles.safeAreaContainer}>
         {/* Header */}
-        <View style={styles.header}>
-          <View style={styles.logoContainer}>
-            <Image 
-              source={require('../../../assets/images/common/logo.png')} 
-              style={styles.logo}
-              resizeMode="contain"
-            />
-          </View>
-          <TouchableOpacity 
-            style={styles.backButton}
-            onPress={() => navigation.goBack()}
-          >
-            <Text style={styles.backButtonText}>Back</Text>
-          </TouchableOpacity>
-        </View>
+        <CustomHeader onBackPress={() => navigation.goBack()} isBackBtnVisible={false} />
       
         {/* Form */}
         <ScrollView contentContainerStyle={styles.formContainer}>
@@ -158,7 +118,7 @@ export default function Signup() {
               <TextInput 
                 style={[styles.input, errors.name ? styles.inputError : null]}
                 value={name}
-                onChangeText={setName}
+                onChangeText={(value) => dispatch(setName(value))}
                 placeholder="Enter your name"
               />
               {errors.name ? <Text style={styles.errorText}>{errors.name}</Text> : null}
@@ -170,7 +130,7 @@ export default function Signup() {
               <TextInput 
                 style={[styles.input, errors.email ? styles.inputError : null]}
                 value={email}
-                onChangeText={setEmail}
+                onChangeText={(value) => dispatch(setEmail(value))}
                 placeholder="Enter your email"
                 keyboardType="email-address"
                 autoCapitalize="none"
@@ -184,7 +144,7 @@ export default function Signup() {
               <TextInput 
                 style={[styles.input, errors.password ? styles.inputError : null]}
                 value={password}
-                onChangeText={setPassword}
+                onChangeText={(value) => dispatch(setPassword(value))}
                 placeholder="Enter your password"
                 secureTextEntry
               />
@@ -234,7 +194,7 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   topSection: {
-    height: '40%',
+    height: '40%', 
     position: 'absolute',
     top: 0,
     left: 0,
@@ -244,7 +204,7 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   bottomSection: {
-    height: '60%',
+    height: '60%', 
     position: 'absolute',
     bottom: 0,
     left: 0,
@@ -258,42 +218,42 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    paddingHorizontal: wp(4),
+    paddingHorizontal: wp(4), 
     paddingTop: hp(6), 
-    paddingBottom: hp(1),
+    paddingBottom: hp(1), 
     zIndex: 10,
   },
   logoContainer: {
-    height: hp(4),
+    height: hp(4), 
     justifyContent: 'center',
   },
   logo: {
-    height: hp(3),
-    width: wp(25),
+    height: hp(3), 
+    width: wp(25), 
   },
   backButton: {
     borderWidth: 1,
     borderColor: Colors.SECONDARY,
-    paddingVertical: hp(0.8),
-    paddingHorizontal: wp(4),
-    borderRadius: wp(5),
+    paddingVertical: hp(0.8), 
+    paddingHorizontal: wp(4), 
+    borderRadius: wp(5), 
   },
   backButtonText: {
     color: Colors.SECONDARY,
     fontFamily: Fonts.LEXEND_MEDIUM,
-    fontSize: wp(3.5),
+    fontSize: wp(3.5), 
   },
   formContainer: {
     justifyContent: 'center',
     alignItems: 'center',
-    paddingVertical: hp(1),
+    paddingVertical: hp(1), 
     paddingTop: hp(4), 
   },
   formBox: {
-    width: wp(85),
+    width: wp(85), 
     backgroundColor: Colors.WHITE,
-    borderRadius: wp(4),
-    padding: wp(5),
+    borderRadius: wp(4), 
+    padding: wp(5), 
     shadowColor: Colors.BLACK,
     shadowOffset: {
       width: 0,
@@ -305,7 +265,7 @@ const styles = StyleSheet.create({
   },
   formTitle: {
     fontFamily: Fonts.LEXEND_BOLD,
-    fontSize: wp(6),
+    fontSize: wp(6), 
     color: Colors.PRIMARY_DARK,
     textAlign: 'center',
     marginBottom: hp(2), 
@@ -316,9 +276,9 @@ const styles = StyleSheet.create({
     marginBottom: hp(2), 
   },
   socialButton: {
-    width: wp(12),
-    height: wp(12),
-    borderRadius: wp(2),
+    width: wp(12), 
+    height: wp(12), 
+    borderRadius: wp(2), 
     backgroundColor: Colors.WHITE,
     justifyContent: 'center',
     alignItems: 'center',
@@ -327,7 +287,7 @@ const styles = StyleSheet.create({
   },
   orText: {
     fontFamily: Fonts.LEXEND_MEDIUM,
-    fontSize: wp(3.5),
+    fontSize: wp(3.5), 
     color: Colors.GRAY,
     textAlign: 'center',
     marginBottom: hp(2), 
@@ -337,7 +297,7 @@ const styles = StyleSheet.create({
   },
   inputLabel: {
     fontFamily: Fonts.LEXEND_MEDIUM,
-    fontSize: wp(3.5),
+    fontSize: wp(3.5), 
     color: Colors.BLACK,
     marginBottom: hp(0.5), 
   },
@@ -345,10 +305,10 @@ const styles = StyleSheet.create({
     height: hp(5.5), 
     borderWidth: 1,
     borderColor: Colors.LIGHT_GRAY,
-    borderRadius: wp(2),
-    paddingHorizontal: wp(3),
+    borderRadius: wp(2), 
+    paddingHorizontal: wp(3), 
     fontFamily: Fonts.LEXEND_REGULAR,
-    fontSize: wp(3.5),
+    fontSize: wp(3.5), 
   },
   inputError: {
     borderColor: Colors.ERROR,
@@ -356,14 +316,14 @@ const styles = StyleSheet.create({
   errorText: {
     color: Colors.ERROR,
     fontFamily: Fonts.LEXEND_REGULAR,
-    fontSize: wp(3),
-    marginTop: hp(0.5),
+    fontSize: wp(3), 
+    marginTop: hp(0.5), 
   },
   rememberContainer: {
     justifyContent: 'center',
     alignItems: 'center',
     marginBottom: hp(2), 
-    marginTop: hp(0.5),
+    marginTop: hp(0.5), 
   },
   rememberInnerContainer: {
     flexDirection: 'row',
@@ -371,13 +331,13 @@ const styles = StyleSheet.create({
   },
   rememberText: {
     fontFamily: Fonts.LEXEND_REGULAR,
-    fontSize: wp(3.5),
+    fontSize: wp(3.5), 
     color: Colors.DARK_GRAY,
-    marginLeft: wp(2),
+    marginLeft: wp(2), 
   },
   signupButton: {
     backgroundColor: Colors.SECONDARY,
-    borderRadius: wp(2),
+    borderRadius: wp(2), 
     height: hp(5.5), 
     justifyContent: 'center',
     alignItems: 'center',
@@ -385,7 +345,7 @@ const styles = StyleSheet.create({
   },
   signupButtonText: {
     fontFamily: Fonts.LEXEND_SEMIBOLD,
-    fontSize: wp(4),
+    fontSize: wp(4), 
     color: Colors.WHITE,
   },
   loginContainer: {
@@ -395,13 +355,12 @@ const styles = StyleSheet.create({
   },
   loginText: {
     fontFamily: Fonts.LEXEND_REGULAR,
-    fontSize: wp(3.5),
+    fontSize: wp(3.5), 
     color: Colors.DARK_GRAY,
   },
   loginLink: {
     fontFamily: Fonts.LEXEND_SEMIBOLD,
-    fontSize: wp(3.5),
+    fontSize: wp(3.5), 
     color: Colors.SECONDARY,
   },
- 
 });

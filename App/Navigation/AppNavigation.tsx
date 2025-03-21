@@ -7,7 +7,7 @@ import Signup from '../Screens/Auth/Signup';
 import Splash from '../Screens/Splash';
 import ForgetPassword from '../Screens/Auth/ForgetPassword';
 
-// Navigation param list types
+//navigation routes
 type RootStackParamList = {
   Login: undefined;
   Signup: undefined;
