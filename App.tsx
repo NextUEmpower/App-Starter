@@ -5,6 +5,7 @@ import AppNavigation from './App/Navigation/AppNavigation';
 import Colors from './App/Utils/Colors';
 import { Provider } from 'react-redux';
 import store from './App/Store/store';
+import TabNavigation from './App/Navigation/TabNavigation';
 
 const App = () => {
   return (
@@ -14,7 +15,7 @@ const App = () => {
           backgroundColor={Colors.WHITE}
           barStyle="dark-content"
         />
-        <AppNavigation />
+        <TabNavigation />
       </GestureHandlerRootView>
     </Provider>
   );
