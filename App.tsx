@@ -15,7 +15,7 @@ const App = () => {
           backgroundColor={Colors.WHITE}
           barStyle="dark-content"
         />
-        {/* tab navigation */}
+        {/* tab navigation... */}
         <TabNavigation />
       </GestureHandlerRootView>
     </Provider>
